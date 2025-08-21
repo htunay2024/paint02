@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizarra Digital - Paint</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #2c3e50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        header {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            background: #2980b9;
+            padding: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .tool-section {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        
+        .tool {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: none;
+            border-radius: 5px;
+            margin: 0 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+        
+        .tool:hover {
+            background: #f1f1f1;
+        }
+        
+        .tool.active {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .color-picker {
+            display: flex;
+            align-items: center;
+        }
+        
+        .color {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin: 0 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+        }
+        
+        .color:hover {
+            transform: scale(1.2);
+        }
+        
+        .color.active {
+            border-color: white;
+            transform: scale(1.2);
+        }
+        
+        .brush-size {
+            display: flex;
+            align-items: center;
+            color: white;
+            margin: 0 10px;
+        }
+        
+        #brushSize {
+            margin: 0 10px;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            overflow: auto;
+            background: #7f8c8d;
+            position: relative;
+        }
+        
+        #pizarra {
+            background: white;
+            display: block;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            cursor: crosshair;
+        }
+        
+        .actions {
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            background: #2980b9;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            margin: 0 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #27ae60;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        footer {
+            color: white;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tool-section {
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pizarra Digital - Paint</h1>
+            <p>Dibuja lo que desees con las herramientas disponibles</p>
+        </header>
+        
+        <div class="toolbar">
+            <div class="tool-section">
+                <button class="tool active" id="pencil" title="Lápiz">✏️</button>
+                <button class="tool" id="brush" title="Pincel">🖌️</button>
+                <button class="tool" id="eraser" title="Borrador">🧹</button>
+                <button class="tool" id="line" title="Línea">📏</button>
+                <button class="tool" id="rectangle" title="Rectángulo">⬜</button>
+                <button class="tool" id="circle" title="Círculo">⭕</button>
+            </div>
+            
+            <div class="tool-section">
+                <div class="color-picker">
+                    <div class="color active" style="background-color: #000000;" data-color="#000000"></div>
+                    <div class="color" style="background-color: #ff0000;" data-color="#ff0000"></div>
+                    <div class="color" style="background-color: #0000ff;" data-color="#0000ff"></div>
+                    <div class="color" style="background-color: #00ff00;" data-color="#00ff00"></div>
+                    <div class="color" style="background-color: #ffff00;" data-color="#ffff00"></div>
+                    <div class="color" style="background-color: #ff00ff;" data-color="#ff00ff"></div>
+                    <div class="color" style="background-color: #ffffff;" data-color="#ffffff"></div>
+                    <input type="color" id="customColor" value="#000000" title="Color personalizado">
+                </div>
+                
+                <div class="brush-size">
+                    <span>Tamaño:</span>
+                    <input type="range" id="brushSize" min="1" max="50" value="5">
+                    <span id="sizeDisplay">5px</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="pizarra" width="800" height="500"></canvas>
+        </div>
+        
+        <div class="actions">
+            <button class="btn btn-primary" id="save">Guardar</button>
+            <button class="btn btn-danger" id="clear">Limpiar</button>
+        </div>
+    </div>
+    
+    <footer>
+        <p>Pizarra Digital tipo Paint - Creado con HTML5, CSS3 y JavaScript</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('pizarra');
+            const ctx = canvas.getContext('2d');
+            const tools = document.querySelectorAll('.tool');
+            const colors = document.querySelectorAll('.color');
+            const customColor = document.getElementById('customColor');
+            const brushSize = document.getElementById('brushSize');
+            const sizeDisplay = document.getElementById('sizeDisplay');
+            const clearBtn = document.getElementById('clear');
+            const saveBtn = document.getElementById('save');
+            
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            let selectedTool = 'pencil';
+            let selectedColor = '#000000';
+            let currentSize = 5;
+            
+            // Establecer el color de fondo blanco
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = selectedColor;
+            
+            // Actualizar el tamaño del pincel
+            brushSize.addEventListener('input', function() {
+                currentSize = this.value;
+                sizeDisplay.textContent = currentSize + 'px';
+            });
+            
+            // Seleccionar herramienta
+            tools.forEach(tool => {
+                tool.addEventListener('click', function() {
+                    tools.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedTool = this.id;
+                });
+            });
+            
+            // Seleccionar color
+            colors.forEach(color => {
+                color.addEventListener('click', function() {
+                    colors.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedColor = this.getAttribute('data-color');
+                    customColor.value = selectedColor;
+                });
+            });
+            
+            // Color personalizado
+            customColor.addEventListener('input', function() {
+                selectedColor = this.value;
+                colors.forEach(c => c.classList.remove('active'));
+            });
+            
+            // Dibujar en el canvas
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            
+            function startDrawing(e) {
+                isDrawing = true;
+                [lastX, lastY] = [e.offsetX, e.offsetY];
+            }
+            
+            function draw(e) {
+                if (!isDrawing) return;
+                
+                ctx.strokeStyle = selectedColor;
+                ctx.lineWidth = currentSize;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                
+                if (selectedTool === 'pencil' || selectedTool === 'brush') {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(e.offsetX, e.offsetY);
+                    ctx.stroke();
+                    [lastX, lastY] = [e.offsetX, e.offsetY];
+                } else if (selectedTool === 'eraser') {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(e.offsetX, e.offsetY);
+                    ctx.stroke();
+                    [lastX, lastY] = [e.offsetX, e.offsetY];
+                }
+            }
+            
+            function stopDrawing() {
+                isDrawing = false;
+            }
+            
+            // Limpiar el canvas
+            clearBtn.addEventListener('click', function() {
+                if (confirm('¿Estás seguro de que quieres limpiar el lienzo?')) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+            });
+            
+            // Guardar el dibujo
+            saveBtn.addEventListener('click', function() {
+                const image = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = image;
+                link.download = 'mi_dibujo.png';
+                link.click();
+            });
+        });
+    </script>
+</body>
+</html>
